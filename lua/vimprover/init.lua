@@ -17,11 +17,12 @@ end
 function M.toggle_vimprover()
   if M.vimprover_on then
     M.vimprover_on = false
+    vim.on_key(nil, ns_id)
     vim.print(M.key_presses)
   else
     M.vimprover_on = true
     M.key_presses = {}
-    vim.on_key(M.log_key_presses)
+    vim.on_key(M.log_key_presses, ns_id)
   end
 end
 
