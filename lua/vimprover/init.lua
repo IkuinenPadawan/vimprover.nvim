@@ -14,11 +14,22 @@ function M.log_key_presses(key, typed)
   end
 end
 
+function M.send_prompt()
+  local result = vim.system({"claude", "-p", "Hi claude"},
+                            {},
+                            function(out)
+                              vim.schedule(function()
+                                vim.notify(out.stdout)
+                              end)
+                            end)
+end
+
 function M.toggle_vimprover()
   if M.vimprover_on then
     M.vimprover_on = false
     vim.on_key(nil, ns_id)
     vim.print(M.key_presses)
+    M.send_prompt()
   else
     M.vimprover_on = true
     M.key_presses = {}
