@@ -14,6 +14,12 @@ function M.log_key_presses(key, typed)
   end
 end
 
+function M.write_to_file(filename, text)
+  local file = io.open(filename, "w")
+  file:write(text)
+  file:close()
+end
+
 function M.send_prompt()
   local result = vim.system({"claude", "-p", "Hi claude"},
                             {},
@@ -29,9 +35,11 @@ function M.toggle_vimprover()
     M.vimprover_on = false
     vim.on_key(nil, ns_id)
     vim.print(M.key_presses)
-    M.send_prompt()
+    M.write_to_file("after", table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n"))
+--    M.send_prompt()
   else
     M.vimprover_on = true
+    M.write_to_file("before", table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n"))
     M.key_presses = {}
     vim.on_key(M.log_key_presses, ns_id)
   end
