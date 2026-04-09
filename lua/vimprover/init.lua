@@ -20,6 +20,13 @@ function M.write_to_file(filename, text)
   file:close()
 end
 
+function M.get_diff()
+  local handle = io.popen("diff " .. "before" .. " " .. "after")
+  local result = handle:read("*a")
+  handle:close()
+  return result
+end
+
 function M.send_prompt()
   local result = vim.system({"claude", "-p", "Hi claude"},
                             {},
@@ -36,6 +43,7 @@ function M.toggle_vimprover()
     vim.on_key(nil, ns_id)
     vim.print(M.key_presses)
     M.write_to_file("after", table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n"))
+    local diff = M.get_diff()
 --    M.send_prompt()
   else
     M.vimprover_on = true
