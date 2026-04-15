@@ -6,6 +6,28 @@ M.key_presses = {}
 
 local ns_id = vim.api.nvim_create_namespace("vimprover")
 
+local defaults = {
+  toggle = '<leader>b',
+  system_prompt = require("vimprover.prompt"),
+  extra_instructions = nil
+
+}
+
+local config = {}
+
+M.setup = function(opts)
+  config = vim.tbl_deep_extend("force", defaults, opts or {})
+
+  vim.api.nvim_create_user_command("Vimprover", M.toggle_vimprover, {})
+
+  vim.keymap.set('n', config.toggle, M.toggle_vimprover, {
+    desc = "Toggle vimprover on/off",
+    silent = true
+  })
+
+
+end
+
 function M.log_key_presses(key, typed)
   if M.vimprover_on then
     print(vim.fn.keytrans(typed))
@@ -36,7 +58,8 @@ function M.assemble_prompt(key_presses, diff)
 end
 
 function M.send_prompt(prompt)
-  local result = vim.system({"claude", "--system-prompt", require("vimprover.prompt"), "-p", prompt},
+  local system_prompt = config.system_prompt .. (config.extra_instructions and "\n" .. config.extra_instructions or "")
+  local result = vim.system({"claude", "--system-prompt", system_prompt, "-p", prompt},
                             {},
                             function(out)
                               vim.schedule(function()
@@ -58,19 +81,6 @@ function M.toggle_vimprover()
     M.key_presses = {}
     vim.on_key(M.log_key_presses, ns_id)
   end
-end
-
-M.setup = function(opts)
-  opts = opts or {}
-
-  vim.api.nvim_create_user_command("Vimprover", M.toggle_vimprover, {})
-
-  local keymap = opts.keymap or '<leader>b'
-
-  vim.keymap.set('n', keymap, M.toggle_vimprover, {
-    desc = "Toggle vimprover on/off",
-    silent = true
-  })
 end
 
 return M
