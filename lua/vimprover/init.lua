@@ -3,6 +3,8 @@ local M = {}
 
 M.vimprover_on = false
 M.key_presses = {}
+M.starting_position = nil
+M.ending_position = nil
 
 local ns_id = vim.api.nvim_create_namespace("vimprover")
 
@@ -52,7 +54,7 @@ function M.get_diff()
 end
 
 function M.assemble_prompt(key_presses, diff)
-  local prompt = { key_presses = key_presses, diff = diff, }
+  local prompt = { starting_position = M.starting_position, ending_position = M.ending_position, key_presses = key_presses, diff = diff, }
 
   local json = vim.json.encode(prompt)
   return json
@@ -92,12 +94,14 @@ end
 function M.toggle_vimprover()
   if M.vimprover_on then
     M.vimprover_on = false
+    M.ending_position = vim.api.nvim_win_get_cursor(0)
     vim.on_key(nil, ns_id)
     M.write_to_file("after", table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n"))
     local diff = M.get_diff()
     M.send_prompt(M.assemble_prompt(M.key_presses, diff))
   else
     M.vimprover_on = true
+    M.starting_position = vim.api.nvim_win_get_cursor(0)
     M.write_to_file("before", table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n"))
     M.key_presses = {}
     vim.on_key(M.log_key_presses, ns_id)
