@@ -31,8 +31,9 @@ end
 function M.log_key_presses(key, typed)
   if M.vimprover_on then
     print(vim.fn.keytrans(typed))
-    if vim.fn.keytrans(typed) then
-      table.insert(M.key_presses, vim.fn.keytrans(typed))
+    local k = vim.fn.keytrans(typed)
+    if k ~= "" then
+      table.insert(M.key_presses, k)
     end
   end
 end
