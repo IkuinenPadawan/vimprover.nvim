@@ -59,13 +59,33 @@ end
 
 function M.send_prompt(prompt)
   local system_prompt = config.system_prompt .. (config.extra_instructions and "\n" .. config.extra_instructions or "")
+  local in_progress = true
   local result = vim.system({"claude", "--system-prompt", system_prompt, "-p", prompt},
                             {},
                             function(out)
                               vim.schedule(function()
+                                in_progress = false
                                 vim.notify(out.stdout)
                               end)
                             end)
+  local statuses = {"Vimcoach Ruminating", "Vimcoach Ruminating.", "Vimcoach Ruminating..", "Vimcoach Ruminating..."}
+  local timer = vim.uv.new_timer()
+  local i = 1
+    timer:start(1000, 500, vim.schedule_wrap(function(moi)
+      if in_progress == false then
+        timer:stop()
+        if not timer:is_closing() then
+          timer:close()
+        end
+      else
+        vim.notify(statuses[i])
+      if i < 4 then
+        i = i + 1
+      else
+        i = 1
+      end
+    end
+  end))
 end
 
 function M.toggle_vimprover()
