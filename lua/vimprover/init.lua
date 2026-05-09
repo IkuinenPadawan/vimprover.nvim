@@ -12,7 +12,6 @@ local defaults = {
   toggle = '<leader>b',
   system_prompt = require("vimprover.prompt"),
   extra_instructions = nil
-
 }
 
 local config = {}
@@ -26,8 +25,6 @@ M.setup = function(opts)
     desc = "Toggle vimprover on/off",
     silent = true
   })
-
-
 end
 
 function M.log_key_presses(key, typed)
