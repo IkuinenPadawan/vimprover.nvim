@@ -11,7 +11,7 @@ M.after_file = nil
 local ns_id = vim.api.nvim_create_namespace("vimprover")
 
 local defaults = {
-  toggle = '<leader>b',
+  toggle = '<leader>vp',
   system_prompt = require("vimprover.prompt"),
   extra_instructions = nil
 }
@@ -31,7 +31,6 @@ end
 
 function M.log_key_presses(key, typed)
   if M.vimprover_on then
-    print(vim.fn.keytrans(typed))
     local k = vim.fn.keytrans(typed)
     if k ~= "" then
       table.insert(M.key_presses, k)
@@ -62,6 +61,7 @@ function M.assemble_prompt(key_presses, diff)
 end
 
 function M.send_prompt(prompt)
+  vim.notify("Vimcoach Ruminating")
   local system_prompt = config.system_prompt .. (config.extra_instructions and "\n" .. config.extra_instructions or "")
   local in_progress = true
   local result = vim.system({"claude", "--system-prompt", system_prompt, "-p", prompt},
@@ -75,7 +75,7 @@ function M.send_prompt(prompt)
   local statuses = {"Vimcoach Ruminating", "Vimcoach Ruminating.", "Vimcoach Ruminating..", "Vimcoach Ruminating..."}
   local timer = vim.uv.new_timer()
   local i = 1
-    timer:start(1000, 500, vim.schedule_wrap(function(moi)
+    timer:start(1000, 500, vim.schedule_wrap(function()
       if in_progress == false then
         timer:stop()
         if not timer:is_closing() then
