@@ -5,6 +5,8 @@ M.vimprover_on = false
 M.key_presses = {}
 M.starting_position = nil
 M.ending_position = nil
+M.before_file = nil
+M.after_file = nil
 
 local ns_id = vim.api.nvim_create_namespace("vimprover")
 
@@ -44,9 +46,11 @@ function M.write_to_file(filename, text)
 end
 
 function M.get_diff()
-  local handle = io.popen("diff " .. "before" .. " " .. "after")
+  local handle = io.popen("diff " .. M.before_file .. " " .. M.after_file)
   local result = handle:read("*a")
   handle:close()
+  os.remove(M.before_file)
+  os.remove(M.after_file)
   return result
 end
 
@@ -93,13 +97,15 @@ function M.toggle_vimprover()
     M.vimprover_on = false
     M.ending_position = vim.api.nvim_win_get_cursor(0)
     vim.on_key(nil, ns_id)
-    M.write_to_file("after", table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n"))
+    M.after_file = vim.fn.tempname()
+    M.write_to_file(M.after_file, table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n"))
     local diff = M.get_diff()
     M.send_prompt(M.assemble_prompt(M.key_presses, diff))
   else
     M.vimprover_on = true
     M.starting_position = vim.api.nvim_win_get_cursor(0)
-    M.write_to_file("before", table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n"))
+    M.before_file = vim.fn.tempname()
+    M.write_to_file(M.before_file, table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n"))
     M.key_presses = {}
     vim.on_key(M.log_key_presses, ns_id)
   end
